@@ -14,3 +14,9 @@ indent_size=2
 indent_style=space
 indent_size=2
 
+[*.{js, py, php}]
+charset = utf-8
+
+[*.js]
+indent_size = 2
+indent_style = space

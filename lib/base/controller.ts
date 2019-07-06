@@ -1,12 +1,15 @@
-import Component from './component'
+import { Component } from './component'
 import { Context } from 'koa'
 import { isString, isObject } from 'util'
+import { Action } from './action'
 
-export default abstract class Controller extends Component {
+export abstract class Controller extends Component {
   public defaultAction: string
   public actionParams: any[]
+  public abstract layout: string
+  public abstract action: Action
 
-  constructor(public ctx: Context) {
+  constructor(public ctx: Context, public id: string, public module: string) {
     super()
     this.defaultAction = 'index'
     this.actionParams = []
@@ -204,4 +207,24 @@ export default abstract class Controller extends Component {
   download(filepath: string, filename: string) {
     return this.ctx.download(filepath, filename)
   }
+
+  actions(): ActionMap {
+    return {}
+  }
+
+  abstract createAction(id: string): Action | null
+
+  abstract bindActionParams(): any[]
+
+  getApp() {
+
+  }
+
+  getUniqueId() {
+
+  }
+}
+
+interface ActionMap {
+  [key: string]: Action
 }

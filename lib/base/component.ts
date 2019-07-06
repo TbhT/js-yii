@@ -5,7 +5,7 @@ interface Behaviors {
   [key: string]: Behavior
 }
 
-export default class Component extends EventEmitter {
+export abstract class Component extends EventEmitter {
   private _behaviors: Behaviors | null
 
   constructor() {
@@ -30,9 +30,11 @@ export default class Component extends EventEmitter {
     }
   }
 
-  behaviors(): Behaviors {
-    return {}
-  }
+  // behaviors(): Behaviors {
+  //   return {}
+  // }
+
+  abstract behaviors(): Behaviors
 
   attachBehaviors() {
     if (this._behaviors === null) {

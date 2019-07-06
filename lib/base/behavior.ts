@@ -1,5 +1,6 @@
-import Component from './component'
+import Component from "./component";
 
+// import Component from './component'
 interface $Events {
   [key: string]: any
 }

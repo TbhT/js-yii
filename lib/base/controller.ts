@@ -3,6 +3,12 @@ import { Context } from 'koa'
 import { isString, isObject } from 'util'
 import { Action } from './action'
 
+export interface ControllerWithParams {
+  __class: Controller
+  [key: string]: any
+}
+
+
 export abstract class Controller extends Component {
   public defaultAction: string
   public actionParams: any[]

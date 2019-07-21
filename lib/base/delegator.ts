@@ -1,7 +1,8 @@
 import { BaseObject } from './base-object'
 import { InvalidCallException, UnknownPropertyException } from './exceptions'
+import { Component } from './component'
 
-const handler = {
+const baseObjectHandler = {
   get(obj: BaseObject, name: string): any {
     const getter = `get${name}`
 
@@ -48,6 +49,52 @@ const handler = {
   }
 }
 
-export function delegateProperties(target: BaseObject) {
-  return new Proxy(target, handler)
+export function delegatorForBaseObject(target: BaseObject) {
+  return new Proxy(target, baseObjectHandler)
+}
+
+const componentHandler = {
+  get(obj: Component, name: string): any {
+    const getter = `get${name}`
+
+    if (typeof obj[getter] === 'function') {
+      return obj[getter]()
+    }
+
+    obj.ensureBehaviors()
+
+    const behaviors = obj.getBehaviors()
+
+    for (const behavior in behaviors) {
+      if (
+        behaviors.hasOwnProperty(behavior) &&
+        behaviors[behavior] &&
+        behaviors[behavior].canGetProperty(name)
+      ) {
+        return behaviors[behavior][name]
+      }
+    }
+
+    if (obj[name]) {
+      return obj[name]
+    }
+
+    const setter = `set${name}`
+    if (obj[setter]) {
+      const errorMessage = `Getting write-only property: ${
+        obj.constructor.name
+      } Object's property ${name}`
+
+      throw new InvalidCallException(errorMessage)
+    }
+
+    const errorMessage = `Setting unknown property: ${
+      obj.constructor.name
+    } Object's property ${name}`
+
+    throw new UnknownPropertyException(errorMessage)
+  },
+  set() {
+    
+  }
 }

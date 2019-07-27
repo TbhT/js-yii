@@ -1,9 +1,5 @@
 import { Configurable, ConfigureObj } from './configurable'
 
-export interface ProxyObj {
-  [key: string]: any
-}
-
 export abstract class BaseObject implements Configurable {
   [key: string]: any
 
@@ -19,7 +15,7 @@ export abstract class BaseObject implements Configurable {
     this.init()
   }
 
-  abstract init(): void
+  init(): void {}
 
   canGetProperty(name: string): boolean {
     return !!(

@@ -6,7 +6,7 @@ interface BehaviorObj {
   [key: string]: Behavior
 }
 
-export abstract class Component extends BaseObject {
+export class Component extends BaseObject {
   private _behaviors: BehaviorObj = {}
 
   private e: EventEmitter

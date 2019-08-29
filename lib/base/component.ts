@@ -1,6 +1,7 @@
 import { BaseObject } from './base-object'
 import { EventEmitter } from 'events'
 import { Behavior } from './behavior'
+import { delegatorForComponent } from './delegator'
 
 interface BehaviorObj {
   [key: string]: Behavior
@@ -14,6 +15,7 @@ export class Component extends BaseObject {
   constructor() {
     super()
     this.e = new EventEmitter()
+    return delegatorForComponent()
   }
 
   behaviors(): BehaviorObj {

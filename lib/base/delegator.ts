@@ -3,6 +3,14 @@ import { InvalidCallException, UnknownPropertyException } from './exceptions'
 import { Component } from './component'
 
 const baseObjectHandler = {
+  construct(
+    target: { new (...args: any[]): any },
+    args: any,
+    newTarget: object
+  ) {
+    return new target(...args)
+  },
+
   get(obj: BaseObject, name: string): any {
     const getter = `get${name}`
 
@@ -24,6 +32,7 @@ const baseObjectHandler = {
 
     throw new UnknownPropertyException(errorMessage)
   },
+
   set(obj: BaseObject, name: string, value: any): boolean {
     const setter = `set${name}`
 
@@ -54,6 +63,14 @@ export function delegatorForBaseObject(target: BaseObject) {
 }
 
 const componentHandler = {
+  setPrototypeOf() {
+    return false
+  },
+
+  getPrototypeOf() {
+    return Component.prototype
+  },
+
   get(obj: Component, name: string): any {
     const getter = `get${name}`
 
@@ -94,6 +111,7 @@ const componentHandler = {
 
     throw new UnknownPropertyException(errorMessage)
   },
+
   set(obj: Component, name: string, value: any) {
     const setter = `set${name}`
 

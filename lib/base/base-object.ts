@@ -1,7 +1,10 @@
 import { Configurable, ConfigureObj } from './configurable'
+import { delegatorForBaseObject } from './delegator'
 
-export abstract class BaseObject implements Configurable {
+export class BaseObject implements Configurable {
   [key: string]: any
+
+  public __yiiType = 'BaseObject'
 
   constructor(config: ConfigureObj = {}) {
     if (Object.keys(config).length > 0) {
@@ -13,6 +16,11 @@ export abstract class BaseObject implements Configurable {
     }
 
     this.init()
+    return delegatorForBaseObject(this)
+  }
+
+  static [Symbol.hasInstance](instance: BaseObject) {
+    return instance.__yiiType === 'BaseObject'
   }
 
   init(): void {}

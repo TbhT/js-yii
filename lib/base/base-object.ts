@@ -1,5 +1,5 @@
 import { Configurable, ConfigureObj } from './configurable'
-import { delegatorForBaseObject } from './delegator'
+
 
 export class BaseObject implements Configurable {
   [key: string]: any
@@ -10,13 +10,12 @@ export class BaseObject implements Configurable {
     if (Object.keys(config).length > 0) {
       for (const key in config) {
         if (config.hasOwnProperty(key)) {
-          this.proxy[key] = config[key]
+          this[key] = config[key]
         }
       }
     }
 
     this.init()
-    return delegatorForBaseObject(this)
   }
 
   static [Symbol.hasInstance](instance: BaseObject) {
@@ -26,16 +25,14 @@ export class BaseObject implements Configurable {
   init(): void {}
 
   canGetProperty(name: string): boolean {
-    return !!(
-      this[`get${name}`] ||
-      (this[name] && typeof this[name] !== 'function')
+    return (
+      this[`get${name}`] || (this[name] && typeof this[name] !== 'function')
     )
   }
 
   canSetProperty(name: string): boolean {
-    return !!(
-      this[`set${name}`] ||
-      (this[name] && typeof this[name] !== 'function')
+    return (
+      this[`set${name}`] || (this[name] && typeof this[name] !== 'function')
     )
   }
 
@@ -44,6 +41,6 @@ export class BaseObject implements Configurable {
   }
 
   hasMethod(name: string): boolean {
-    return !!(this[name] && typeof this[name] === 'function')
+    return this[name] && typeof this[name] === 'function'
   }
 }

@@ -1,14 +1,15 @@
 import { BaseObject } from './base-object'
 import { InvalidCallException, UnknownPropertyException } from './exceptions'
 import { Component } from './component'
+import { Proxy } from './advance-type'
 
 const baseObjectHandler = {
-  construct(
-    target: { new (...args: any[]): any },
-    args: any,
-    newTarget: object
-  ) {
-    return new target(...args)
+  setPrototypeOf() {
+    return false
+  },
+
+  getPrototypeOf() {
+    return BaseObject.prototype
   },
 
   get(obj: BaseObject, name: string): any {
@@ -19,7 +20,7 @@ const baseObjectHandler = {
     } else if (obj[`set${name}`]) {
       const errorMessage = `Getting write-only property: ${
         obj.constructor.name
-      } Object's property ${name}`
+      }'s property ${name}`
 
       throw new InvalidCallException(errorMessage)
     } else if (obj[name]) {
@@ -28,7 +29,7 @@ const baseObjectHandler = {
 
     const errorMessage = `Getting unknown property: ${
       obj.constructor.name
-    } Object's property ${name}`
+    }'s property ${name}`
 
     throw new UnknownPropertyException(errorMessage)
   },
@@ -42,7 +43,7 @@ const baseObjectHandler = {
     } else if (obj[`get${name}`]) {
       const errorMessage = `Getting read-only property: ${
         obj.constructor.name
-      } Object's property ${name}`
+      }'s property ${name}`
 
       throw new InvalidCallException(errorMessage)
     } else if (obj[name]) {
@@ -51,14 +52,14 @@ const baseObjectHandler = {
     } else {
       const errorMessage = `Setting unknown property: ${
         obj.constructor.name
-      } Object's property ${name}`
+      }'s property ${name}`
 
       throw new UnknownPropertyException(errorMessage)
     }
   }
 }
 
-export function delegatorForBaseObject(target: BaseObject) {
+export function ProxyBaseObject(target: BaseObject) {
   return new Proxy(target, baseObjectHandler)
 }
 
@@ -100,14 +101,14 @@ const componentHandler = {
     if (obj[setter]) {
       const errorMessage = `Getting write-only property: ${
         obj.constructor.name
-      } Object's property ${name}`
+      }'s property ${name}`
 
       throw new InvalidCallException(errorMessage)
     }
 
     const errorMessage = `Setting unknown property: ${
       obj.constructor.name
-    } Object's property ${name}`
+    }'s property ${name}`
 
     throw new UnknownPropertyException(errorMessage)
   },
@@ -116,11 +117,14 @@ const componentHandler = {
     const setter = `set${name}`
 
     if (typeof obj[setter] === 'function') {
-      return obj[setter](value)
+      obj[setter](value)
+      return true
     } else if (name.substr(0, 3) === 'on ') {
-      return obj.on(name.substr(3), value)
+      obj.on(name.substr(3), value)
+      return true
     } else if (name.substr(0, 3) === 'as ') {
-      return obj.attachBehavior(name, value)
+      obj.attachBehavior(name, value)
+      return true
     }
 
     obj.ensureBehaviors()
@@ -135,26 +139,24 @@ const componentHandler = {
       return false
     })
 
-    if (flag === true) {
-      return
+    if (flag) {
+      return true
     }
 
     if (obj[`get${name}`]) {
       throw new InvalidCallException(
         `Setting read-only property: ${
           this.constructor.name
-        } Object's property ${name}`
+        }'s property ${name}`
       )
     }
 
     throw new UnknownPropertyException(
-      `Setting unknown property: ${
-        obj.constructor.name
-      } Object's property ${name}`
+      `Setting unknown property: ${obj.constructor.name}'s property ${name}`
     )
   }
 }
 
-export function delegatorForComponent(target: Component) {
+export function ProxyComponent(target: Component) {
   return new Proxy(target, componentHandler)
 }

@@ -1,24 +1,29 @@
 import { BaseObject } from './base-object'
 import { EventEmitter } from 'events'
 import { Behavior } from './behavior'
-import { delegatorForComponent } from './delegator'
 
 interface BehaviorObj {
   [key: string]: Behavior
 }
 
 export class Component extends BaseObject {
-  private _behaviors: BehaviorObj = {}
+
+  private behaviors: BehaviorObj = {}
 
   private e: EventEmitter
+
+  public __yiiType = 'Component'
 
   constructor() {
     super()
     this.e = new EventEmitter()
-    return delegatorForComponent()
   }
 
-  behaviors(): BehaviorObj {
+  static [Symbol.hasInstance](instance: Component) {
+    return instance.__yiiType === 'Component'
+  }
+
+  static behaviors(): BehaviorObj {
     return {}
   }
 
@@ -28,7 +33,7 @@ export class Component extends BaseObject {
     this.e.on(event, listener)
   }
 
-  off(event: string | symbol, listener: (...arg: any[]) => void): void {
+  off(event: string | symbol, listener: (...arg: any[]) => void | null): void {
     this.ensureBehaviors()
 
     this.e.off(event, listener)
@@ -43,16 +48,16 @@ export class Component extends BaseObject {
   getBehavior(name: string): Behavior {
     this.ensureBehaviors()
 
-    return this._behaviors[name] || null
+    return this.behaviors[name] || null
   }
 
   getBehaviors() {
-    return this._behaviors
+    return this.behaviors
   }
 
   ensureBehaviors() {
-    if (Object.keys(this._behaviors).length > 0) {
-      const behaviors = this.behaviors()
+    if (Object.keys(this.behaviors).length > 0) {
+      const behaviors = Component.behaviors()
       Object.keys(behaviors).map(name => {
         this.attachBehaviorInternal(name, behaviors[name])
       })
@@ -76,9 +81,9 @@ export class Component extends BaseObject {
   detachBehavior(name: string): Behavior | null {
     this.ensureBehaviors()
 
-    if (this._behaviors[name]) {
-      const behavior = this._behaviors[name]
-      delete this._behaviors[name]
+    if (this.behaviors[name]) {
+      const behavior = this.behaviors[name]
+      delete this.behaviors[name]
       behavior.detach()
       return behavior
     }
@@ -88,18 +93,18 @@ export class Component extends BaseObject {
 
   detachBehaviors(): void {
     this.ensureBehaviors()
-    Object.keys(this._behaviors).map(name => {
+    Object.keys(this.behaviors).map(name => {
       this.detachBehavior(name)
     })
   }
 
   private attachBehaviorInternal(name: string, behavior: Behavior): Behavior {
-    if (this._behaviors[name]) {
-      this._behaviors[name].detach()
+    if (this.behaviors[name]) {
+      this.behaviors[name].detach()
     }
 
     behavior.attach(this)
-    this._behaviors[name] = behavior
+    this.behaviors[name] = behavior
 
     return behavior
   }

@@ -14,23 +14,25 @@ export class Behavior extends BaseObject {
     this.e = new EventEmitter()
   }
 
-  events(): IndexedFnObj {
+  static events(): IndexedFnObj {
     return {}
   }
 
   attach(owner: Component): void {
     this.owner = owner
 
-    const events = this.events()
+    const events = Behavior.events()
 
-    Object.keys(events).map(eventName => {
-      owner.on(eventName, events[eventName])
-    })
+    Object.keys(events).map(eventName => owner.on(eventName, events[eventName]))
   }
 
   detach() {
     if (this.owner !== null) {
-      this.events
+      const events = Behavior.events()
+
+      Object.keys(events).map(eventName =>
+        (<Component>this.owner).off(eventName, events[eventName])
+      )
     }
   }
 }

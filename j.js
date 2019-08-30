@@ -13,19 +13,29 @@ class A {
   }
 }
 
-class B {}
-
-const proxyA = new Proxy(A, {
-  construct(target, args) {
-    const t = new target(...args)
-    t.__type = 'AA'
-    return t
+class B extends A {
+  constructor() {
+    super()
+    this.b = 'this is b'
   }
-})
+}
+
+const b = new B();
+const a = new A();
+console.log(a, b.__proto__)
+
+//
+// const proxyA = new Proxy(A, {
+//   construct(target, args) {
+//     const t = new target(...args)
+//     t.__type = 'AA'
+//     return t
+//   }
+// })
 
 // console.log(
 // console.log((new proxyA).proxyType)
-console.log((new proxyA) instanceof A)
+// console.log(new proxyA() instanceof A)
 // console.log(proxyA.prototype)
 
 // const aObj = new A

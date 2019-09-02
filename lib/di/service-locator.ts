@@ -1,9 +1,17 @@
 import { Component } from '../base/component'
 
-export class ServiceLocator extends Component {
-  private _components = {}
+interface ComponentsObj {
+  [key: string]: Component
+}
 
-  private _definitions = {}
+
+
+export class ServiceLocator extends Component {
+
+  // shared component instances indexed by their IDs
+  private components: ComponentsObj = {}
+
+  private definitions = {}
 
   
 }

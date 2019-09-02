@@ -1,6 +1,7 @@
 import { BaseObject } from './base-object'
 import { EventEmitter } from 'events'
 import { Behavior } from './behavior'
+import { ConfigureObj } from './configurable';
 
 interface BehaviorObj {
   [key: string]: Behavior
@@ -14,8 +15,8 @@ export class Component extends BaseObject {
 
   public __yiiType = 'Component'
 
-  constructor() {
-    super()
+  constructor(config: ConfigureObj = {}) {
+    super(config)
     this.e = new EventEmitter()
   }
 

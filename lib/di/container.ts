@@ -92,19 +92,15 @@ export class Container extends Component {
    *
    * @param className
    */
-  protected getDependcies(className: Function) {
+  protected getDependencies(className: Function): object | null {
     if (this.reflections.has(className)) {
-      return {
-        reflection: this.reflections.get(className),
-        dependencies: this.dependencies.get(className)
-      }
+      return this.dependencies.get(className)
     }
 
     const dependencies = []
-    let reflection: object
 
     try {
-      reflection = Reflect.construct(className, [])
+      
     } catch (error) {
       throw new InvalidConfigException(
         `Failed to instantiate component or class "${className.name}". ${error}`

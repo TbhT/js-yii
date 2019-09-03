@@ -3,17 +3,21 @@ import { Container } from './container'
 import { isString, isObject } from 'util'
 
 export default class Instance {
-  protected constructor(public id: Function) {}
+  constructor(public id: Function) {}
 
   /**
-   *
+   * creates a new Instance object
+   * @param id constructor
    */
-  public static of(id: string) {
+  public static of(id: Function) {
     return new Instance(id)
   }
 
   /**
-   * resolves the specified reference into the actual object and
+   * resolves the specified reference into the actual object and make sure 
+   * it is of the specified type.
+   * 
+   * The reference may be specified as a string or an Instance object.
    */
   public static ensure(
     reference: string | object,

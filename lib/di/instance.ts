@@ -3,7 +3,7 @@ import { Container } from './container'
 import { isString, isObject } from 'util'
 
 export default class Instance {
-  protected constructor(public id: string) {}
+  protected constructor(public id: Function) {}
 
   /**
    *

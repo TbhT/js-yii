@@ -2,7 +2,7 @@ import { BaseObject } from './base-object'
 import { Component } from './component'
 import { EventEmitter } from 'events'
 import { ConfigureObj } from './configurable'
-import { IndexedFnObj } from './base-yii'
+import { IndexedFnObjType } from './base-yii'
 
 export class Behavior extends BaseObject {
   public owner: Component | null = null
@@ -14,7 +14,7 @@ export class Behavior extends BaseObject {
     this.e = new EventEmitter()
   }
 
-  static events(): IndexedFnObj {
+  static events(): IndexedFnObjType {
     return {}
   }
 

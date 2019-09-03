@@ -1,11 +1,16 @@
 import { ConfigureObj } from './configurable'
 import { Container } from '../di/container'
+import Instance from '../di/instance'
 
-export interface IndexedObj {
+export type IndexedObjType = {
   [key: string]: any
 }
 
-export interface IndexedFnObj {
+export type InstanceObjType = {
+  [key: string]: Instance
+}
+
+export type IndexedFnObjType = {
   [key: string]: (...arg: any[]) => void
 }
 
@@ -20,13 +25,13 @@ export default class BaseYii {
    */
   public static container: Container
 
-  public static version: string = '0.1.0'
+  public static readonly version: string = '0.1.0'
 
   /**
    * Creates a new object using the given configuration.
-   * 
+   *
    * ```javascript
-   * 
+   *
    * // create an object using a configuration
    * $object = Yii.createObject({
    *  'class' => Connection,

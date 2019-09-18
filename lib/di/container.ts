@@ -1,17 +1,25 @@
 import { Component } from '../base/component'
 import { ConfigureObj } from '../base/configurable'
-import { IndexedObjType, InstanceObjType, IndexedFnObjType } from '../base/base-yii'
+import {
+  IndexedObjType,
+  InstanceObjType,
+  IndexedFnObjType
+} from '../base/base-yii'
 import { InvalidConfigException } from '../base/exceptions'
 import Instance from './instance'
 
-type DefinitionType = null | ((...args: any[]) => void) | string | IndexedObjType
+type DefinitionType =
+  | null
+  | ((...args: any[]) => void)
+  | string
+  | IndexedObjType
 
 export class Container extends Component {
   private singletons: Map<Function, any> = new Map()
 
   private definitions: Map<Function, Function> = new Map()
 
-  private params: IndexedObjType = {}
+  private params: Map<Function, any> = new Map()
 
   private dependencies: IndexedObjType = {}
 
@@ -32,23 +40,55 @@ export class Container extends Component {
    * @param params a list of constructor parameter values.
    * @param config a list of key-val pairs the will be used to initialize the object properties
    */
-  get(className: Function, params: IndexedFnObjType = {}, config: ConfigureObj = {}) {
+  get(
+    className: Function,
+    params: IndexedObjType = {},
+    config: ConfigureObj = {}
+  ) {
     if (this.singletons.has(className)) {
       return this.singletons.get(className)
     } else if (!this.definitions.has(className)) {
       return this.build(className, params, config)
     }
 
-    const definition = this.definitions[className]
+    const definition = this.definitions.get(className)
   }
 
-  set(className: string, definition = {}, params = []) {
+  /**
+   * Register a class definition with this container
+   *
+   * For example:
+   * // register a class name as is. This is can be skiped
+   * container.set(Connection)
+   *
+   * // register an alias name. You can use $container->get('foo')
+   * // to create an instance of Connection
+   * container.set('foo', Connection)
+   *
+   * // register a class with configuration. The configuration
+   * // will be applied when the class is instantiated by get()
+   * container.set(Connection, {
+   *  'host': '127.0.0.1',
+   *  'port': 3306,
+   *  'username': 'root',
+   *  'password': '',
+   *  'charset': 'utf-8'
+   * })
+   *
+   * If a class definition with the same name already exists, it will be overwritten with the new one.
+   * You may use [[has()]] to check if a class definition already exists.
+   *
+   * @param className
+   * @param params
+   */
+  set(className: string | Function, params: IndexedObjType = {}) {
     // this.definitions[className] =
+    const definition = this.normalizeDefinition(className, params)
   }
 
   protected normalizeDefinition(
-    className: string,
-    definition: DefinitionType = null
+    className: string | Function,
+    definition: IndexedObjType
   ) {
     if (!definition) {
       return { className }
@@ -100,7 +140,6 @@ export class Container extends Component {
     const dependencies = []
 
     try {
-      
     } catch (error) {
       throw new InvalidConfigException(
         `Failed to instantiate component or class "${className.name}". ${error}`
@@ -110,10 +149,12 @@ export class Container extends Component {
 
   /**
    * resolves dependencies by replacing them with the actual object instances
-   * 
+   *
    * @param dependencies
    */
-  protected resolveDependencies(dependencies: IndexedFnObjType): InstanceObjType {
+  protected resolveDependencies(
+    dependencies: IndexedFnObjType
+  ): InstanceObjType {
     const dp: InstanceObjType = {}
 
     Object.keys(dependencies).map(className => {

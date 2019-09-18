@@ -15,11 +15,11 @@ type DefinitionType =
   | IndexedObjType
 
 export class Container extends Component {
-  private singletons: Map<Function, any> = new Map()
+  private singletons: Map<Function | string, any> = new Map()
 
-  private definitions: Map<Function, Function> = new Map()
+  private definitions: Map<Function | string, Function> = new Map()
 
-  private params: Map<Function, any> = new Map()
+  private params: Map<Function | string, IndexedObjType> = new Map()
 
   private dependencies: IndexedObjType = {}
 
@@ -41,7 +41,7 @@ export class Container extends Component {
    * @param config a list of key-val pairs the will be used to initialize the object properties
    */
   get(
-    className: Function,
+    className: Function | string,
     params: IndexedObjType = {},
     config: ConfigureObj = {}
   ) {
@@ -63,7 +63,9 @@ export class Container extends Component {
    *
    * // register an alias name. You can use $container->get('foo')
    * // to create an instance of Connection
-   * container.set('foo', Connection)
+   * container.set('foo', {
+   *  className: Connection
+   * })
    *
    * // register a class with configuration. The configuration
    * // will be applied when the class is instantiated by get()
@@ -82,32 +84,28 @@ export class Container extends Component {
    * @param params
    */
   set(className: string | Function, params: IndexedObjType = {}) {
-    // this.definitions[className] =
     const definition = this.normalizeDefinition(className, params)
+
+    this.definitions.set(className, definition.className)
+    this.params.set(className, params)
+    this.singletons.delete(className)
+    return this
   }
 
   protected normalizeDefinition(
     className: string | Function,
-    definition: IndexedObjType
+    params: IndexedObjType
   ) {
-    if (!definition) {
+    if (!params) {
       return { className }
-    } else if (typeof definition === 'string') {
-      return { className: definition }
-    } else if (typeof definition === 'function') {
-      return definition
-    } else if (typeof definition === 'object') {
-      if (!definition['className']) {
-        throw new InvalidConfigException(
-          'A class definition requires a "className" member'
-        )
-      }
-
-      return definition
+    } else if (typeof className === 'string') {
+      return { className: params['className'] }
+    } else if (typeof className === 'function') {
+      return { className }
     }
 
     throw new InvalidConfigException(
-      `Unsupported definition type for ${className}: ${definition}`
+      `Unsupported definition type for ${className}: ${params}`
     )
   }
 
@@ -120,11 +118,11 @@ export class Container extends Component {
    * @param config
    */
   protected build(
-    className: Function,
+    className: Function  | string,
     params: IndexedObjType,
     config: ConfigureObj
   ) {
-    // reflection
+    
   }
 
   /**

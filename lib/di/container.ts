@@ -14,6 +14,20 @@ type DefinitionType =
   | string
   | IndexedObjType
 
+/**
+ * Container implements a [dependency injection](http://en.wikipedia.org/wiki/Dependency_injection) container.
+ *
+ * A dependency injection (DI) container is an object that knows how to instantiate and configure objects and
+ * all their dependent objects. For more information about DI, please refer to
+ * [Martin Fowler's article](http://martinfowler.com/articles/injection.html).
+ *
+ * Container supports constructor injection as well as property injection.
+ * 
+ * To use container, you first need to set up the class dependencies by call [[set()]]
+ * You then call [[get()]] to create a new object . Container will automatically instantiate
+ * dependent objects, inject them into the object being created, configure and finally return
+ * the newly created object.
+ */
 export class Container extends Component {
   private singletons: Map<Function | string, any> = new Map()
 
@@ -118,12 +132,10 @@ export class Container extends Component {
    * @param config
    */
   protected build(
-    className: Function  | string,
+    className: Function | string,
     params: IndexedObjType,
     config: ConfigureObj
-  ) {
-    
-  }
+  ) {}
 
   /**
    * returns the dependencies of the specified class.

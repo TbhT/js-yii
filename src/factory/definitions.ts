@@ -155,3 +155,12 @@ class CtorBuilder {
     return obj
   }
 }
+
+export function normalize(config: Constructable, id: string): Definition {
+  if (config instanceof Definition) {
+    return config
+  }
+
+//   todo: 
+  return config
+}

@@ -28,3 +28,21 @@ export interface ContainerInterface {
    */
   has(id: string): boolean
 }
+
+
+export class Container implements ContainerInterface {
+  private definitions = new Map()
+
+  // used to collect ids instantiated during build to detect circular references
+  private building = new Map()
+
+  // list of providers deferred to register till their service would be requested
+  private deferredProviders = new Map()
+
+  private instances: Map<any, object> = new Map()
+
+  
+
+
+
+}

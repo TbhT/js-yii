@@ -1,19 +1,27 @@
 import { ContainerInterface } from '../container'
-import { NotInstantiableError } from './exceptions'
+import { NotInstantiableError, InvalidConfigError } from './exceptions'
+import { isFunction, isObject, isArray } from 'util'
 
 interface DefinitionInterface {
   resolve(container: ContainerInterface, params: any[]): object
 }
 
-interface IndexableObj {
+export interface IndexableObj {
   [key: string]: any
 }
 
-interface Constructable {
+export interface Constructable {
   new (...params: any[]): any
 }
 
-abstract class Definition implements DefinitionInterface {
+export type NormalizeType = Constructable | IndexableObj | Definition
+
+export interface NormalizeObj {
+  id: string
+  type: NormalizeType
+}
+
+export abstract class Definition implements DefinitionInterface {
   abstract resolve(container: ContainerInterface, params: any[]): object
 }
 
@@ -156,11 +164,34 @@ class CtorBuilder {
   }
 }
 
-export function normalize(config: Constructable, id: string): Definition {
+/**
+ * define may be defined multiple ways:
+ * ```javascript
+ *
+ *
+ * ```
+ *
+ *
+ * @param config
+ * @param id
+ */
+export function normalize(
+  config: NormalizeType,
+  params: any[] = []
+): Definition {
   if (config instanceof Definition) {
     return config
   }
 
-//   todo: 
-  return config
+  if (isFunction(config)) {
+    return new CtorDefinition(<Constructable>config, params)
+  }
+
+  if (isObject(config)) {
+    const fn: Constructable = (<IndexableObj>config)['construct']
+    const args: any[] = (<IndexableObj>config)['args']
+    return new CtorDefinition(fn, args)
+  }
+
+  throw new InvalidConfigError(`Invalid definition: ${config}`)
 }

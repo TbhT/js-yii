@@ -99,8 +99,8 @@ class CtorBuilder {
     const params: any[] = definition.getParams()
 
     if (params.length > 0) {
-      for (const [index, value] of params) {
-        dependencies[index] = value
+      for (const index in params) {
+        dependencies[index] = params[index]
       }
     }
 
@@ -164,6 +164,44 @@ class CtorBuilder {
   }
 }
 
+export class ValueDefinition extends Definition {
+  constructor(private value: any) {
+    super()
+  }
+
+  public resolve(container: ContainerInterface, params: any[] = []) {
+    return this.value
+  }
+
+  /**
+   * this is used to detect circle reference.
+   * if a concrete reference is guaranteed to never be part of 
+   * such a circle, null should be returned 
+   */
+  public getId() {
+    return null
+  }
+}
+
+/**
+ * class Reference allows us to define a dependency to a service in the 
+ * container in another service definition. For example:
+ * 
+ * ```javascript
+ * 
+ * {
+ *    'classA': classA,
+ *    'classB': classB,
+ *    'serviceA': {
+ *      'className': serviceA,
+ *      'args': [
+ *        Reference.to('classA')
+ *      ]
+ *    }
+ * }
+ * 
+ * ```
+ */
 export class Reference implements DefinitionInterface {
   private constructor(private id: string) {}
 
@@ -207,10 +245,12 @@ export function normalize(
     return new CtorDefinition(<Constructable>config, params)
   }
 
-  if (isObject(config)) {
-    const fn: Constructable = (<IndexableObj>config)['construct']
+  if (isObject(config) && isFunction((<IndexableObj>config).className)) {
+    const fn: Constructable = (<IndexableObj>config)['className']
     const args: any[] = (<IndexableObj>config)['args']
     return new CtorDefinition(fn, args)
+  } else if (isObject(config)) {
+    return new ValueDefinition(config)
   }
 
   throw new InvalidConfigError(`Invalid definition: ${config}`)

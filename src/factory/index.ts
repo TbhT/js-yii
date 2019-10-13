@@ -25,11 +25,11 @@ interface FactoryInterface extends ContainerInterface {
 }
 
 export class Factory implements FactoryInterface {
-  public container: ContainerInterface | null
-  private definitions: Map<string, Definition>
+  public container: ContainerInterface
+  private definitions: Map<any, Definition>
 
   constructor(container: ContainerInterface, definitions: IndexableObj = {}) {
-    this.container = container || null
+    this.container = container
     this.definitions = new Map()
     this.setMultiple(definitions)
   }
@@ -42,18 +42,18 @@ export class Factory implements FactoryInterface {
     return this.getDefinition(id).resolve(this, params)
   }
 
-  set(id: string, definition: NormalizeType) {
+  set(id: any, definition: NormalizeType) {
     const df = normalize(definition)
     this.definitions.set(id, df)
   }
 
   setMultiple(definitions: IndexableObj) {
     Object.keys(definitions).map(key => {
-      this.set(key, definitions[key])
+      this.set(key, <NormalizeType>definitions[key])
     })
   }
 
-  has(id: string): boolean {
+  has(id: any): boolean {
     return this.definitions.has(id)
   }
 

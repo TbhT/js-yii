@@ -1,9 +1,9 @@
 import { ContainerInterface } from '../container'
 import { NotInstantiableError, InvalidConfigError } from './exceptions'
-import { isFunction, isObject, isArray } from 'util'
+import { isFunction, isObject, isArray, isString } from 'util'
 
 interface DefinitionInterface {
-  resolve(container: ContainerInterface, params: any[]): object
+  resolve(container: ContainerInterface, params: any[]): object | null
 }
 
 export interface IndexableObj {
@@ -14,12 +14,7 @@ export interface Constructable {
   new (...params: any[]): any
 }
 
-export type NormalizeType = Constructable | IndexableObj | Definition
-
-export interface NormalizeObj {
-  id: string
-  type: NormalizeType
-}
+export type NormalizeType = Constructable | IndexableObj | Definition | string
 
 export abstract class Definition implements DefinitionInterface {
   abstract resolve(container: ContainerInterface, params: any[]): object
@@ -48,7 +43,7 @@ export class CtorDefinition extends Definition {
    * getParams
    */
   public getParams(): any[] {
-    return Object.assign({}, this.$params)
+    return this.$params
   }
 
   /**
@@ -100,7 +95,7 @@ class CtorBuilder {
    */
   public build(container: ContainerInterface, definition: CtorDefinition) {
     const $class = definition.getClass()
-    const dependencies: any[] = this.getDependencies($class)
+    const dependencies: any[] = this.getDependencies(definition)
     const params: any[] = definition.getParams()
 
     if (params.length > 0) {
@@ -114,7 +109,12 @@ class CtorBuilder {
     return this.configure(container, obj, definition.getConfig())
   }
 
-  private getDependencies($class: Function): any[] {
+  private getDependencies(definition: CtorDefinition): any[] {
+    const $class = definition.getClass()
+    if (!CtorBuilder.$dependencies.has($class)) {
+      CtorBuilder.$dependencies.set($class, definition.getParams())
+    }
+
     return <any[]>CtorBuilder.$dependencies.get($class)
   }
 
@@ -164,6 +164,22 @@ class CtorBuilder {
   }
 }
 
+export class Reference implements DefinitionInterface {
+  private constructor(private id: string) {}
+
+  public getId(): string {
+    return this.id
+  }
+
+  public static to(id: string): Reference {
+    return new Reference(id)
+  }
+
+  public resolve(container: ContainerInterface, params: any[] = []): object {
+    return container.get(this.id)
+  }
+}
+
 /**
  * define may be defined multiple ways:
  * ```javascript
@@ -181,6 +197,10 @@ export function normalize(
 ): Definition {
   if (config instanceof Definition) {
     return config
+  }
+
+  if (isString(config)) {
+    return Reference.to(config)
   }
 
   if (isFunction(config)) {

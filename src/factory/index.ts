@@ -5,8 +5,7 @@ import {
   Definition,
   normalize,
   CtorDefinition,
-  NormalizeType,
-  NormalizeObj
+  NormalizeType
 } from './definitions'
 import { isFunction } from 'util'
 
@@ -29,17 +28,17 @@ export class Factory implements FactoryInterface {
   public container: ContainerInterface | null
   private definitions: Map<string, Definition>
 
-  constructor(container: ContainerInterface, definitions: Definition[] = []) {
+  constructor(container: ContainerInterface, definitions: IndexableObj = {}) {
     this.container = container || null
-    // todo:
     this.definitions = new Map()
+    this.setMultiple(definitions)
   }
 
-  create(config: IndexableObj | Constructable, params: any[] = []): object {
-    return normalize(config, params)
+  create(config: NormalizeType, params: any[] = []): object {
+    return normalize(config, params).resolve(this, params)
   }
 
-  get(id: any, params: any[] = []): object | undefined {
+  get(id: any, params: any[] = []): object {
     return this.getDefinition(id).resolve(this, params)
   }
 
@@ -48,9 +47,9 @@ export class Factory implements FactoryInterface {
     this.definitions.set(id, df)
   }
 
-  setMultiple(definitions: NormalizeObj[]) {
-    definitions.map(def => {
-      this.set(def.id, def.type)
+  setMultiple(definitions: IndexableObj) {
+    Object.keys(definitions).map(key => {
+      this.set(key, definitions[key])
     })
   }
 

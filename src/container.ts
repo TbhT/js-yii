@@ -17,7 +17,7 @@ export interface ContainerInterface {
    * @throws NotFoundErrorInterface
    * @throws ContainerErrorInterface
    */
-  get(id: string): object | undefined
+  get(id: string): object
 
   /**
    * return true if the container can return an entry for the given identifier

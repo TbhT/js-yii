@@ -1,4 +1,4 @@
-import { ContainerErrorInterface, NotFoundErrorInterface } from '../container'
+import { ContainerErrorInterface, NotFoundErrorInterface } from '../di/container'
 
 /**
  * InvalidConfigError is thrown when configuration

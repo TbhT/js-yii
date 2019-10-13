@@ -1,5 +1,5 @@
 import { Factory } from '../../src/factory'
-import { ContainerInterface } from '../../src/container'
+import { ContainerInterface } from '../../src/di/container'
 import { Reference, IndexableObj } from '../../src/factory/definitions'
 
 class TestContainer implements ContainerInterface {

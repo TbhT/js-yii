@@ -1,4 +1,4 @@
-import { ContainerInterface } from '../container'
+import { ContainerInterface } from '../di/container'
 import {
   IndexableObj,
   Constructable,

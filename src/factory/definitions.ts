@@ -1,4 +1,4 @@
-import { ContainerInterface } from '../container'
+import { ContainerInterface } from '../di/container'
 import { NotInstantiableError, InvalidConfigError } from './exceptions'
 import { isFunction, isObject, isArray, isString } from 'util'
 

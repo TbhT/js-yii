@@ -175,8 +175,8 @@ export class ValueDefinition extends Definition {
 
   /**
    * this is used to detect circle reference.
-   * if a concrete reference is guaranteed to never be part of 
-   * such a circle, null should be returned 
+   * if a concrete reference is guaranteed to never be part of
+   * such a circle, null should be returned
    */
   public getId() {
     return null
@@ -184,11 +184,11 @@ export class ValueDefinition extends Definition {
 }
 
 /**
- * class Reference allows us to define a dependency to a service in the 
+ * class Reference allows us to define a dependency to a service in the
  * container in another service definition. For example:
- * 
+ *
  * ```javascript
- * 
+ *
  * {
  *    'classA': classA,
  *    'classB': classB,
@@ -199,7 +199,7 @@ export class ValueDefinition extends Definition {
  *      ]
  *    }
  * }
- * 
+ *
  * ```
  */
 export class Reference implements DefinitionInterface {
@@ -246,9 +246,17 @@ export function normalize(
   }
 
   if (isObject(config) && isFunction((<IndexableObj>config).className)) {
+    const configParams: IndexableObj = Object.assign({}, config)
     const fn: Constructable = (<IndexableObj>config)['className']
+    if (fn) {
+      delete configParams['className']
+    }
     const args: any[] = (<IndexableObj>config)['args']
-    return new CtorDefinition(fn, args)
+    
+    if (args) {
+      delete configParams['args']
+    }
+    return new CtorDefinition(fn, args, configParams)
   } else if (isObject(config)) {
     return new ValueDefinition(config)
   }

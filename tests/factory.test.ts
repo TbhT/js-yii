@@ -1,6 +1,6 @@
-import { Factory } from '../../src/factory'
-import { ContainerInterface } from '../../src/di/container'
-import { Reference, IndexableObj } from '../../src/factory/definitions'
+import { Factory } from '../src/factory'
+import { ContainerInterface } from '../src/di/container'
+import { Reference, IndexableObj } from '../src/factory/definitions'
 
 class TestContainer implements ContainerInterface {
   get() {

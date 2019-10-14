@@ -238,6 +238,7 @@ export function normalize(
   }
 
   if (isString(config)) {
+    // todo: need to be tested
     return Reference.to(config)
   }
 

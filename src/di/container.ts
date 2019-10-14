@@ -1,7 +1,20 @@
-import { IndexableObj, Definition } from '../factory/definitions'
-import { ServiceProviderInterface, DeferredServiceProvider } from './contracts'
+import {
+  IndexableObj,
+  Definition,
+  Constructable,
+  NormalizeType,
+  normalize
+} from '../factory/definitions'
+import {
+  ServiceProviderInterface,
+  DeferredServiceProvider,
+  ServiceProvider
+} from './contracts'
 import { isString } from 'util'
-import { CircularReferenceError } from '../factory/exceptions'
+import {
+  CircularReferenceError,
+  InvalidConfigError
+} from '../factory/exceptions'
 
 /**
  * base interface representing a generic Error in a container
@@ -40,15 +53,21 @@ export class Container implements ContainerInterface {
   private building = new Map()
 
   // list of providers deferred to register till their service would be requested
-  private deferredProviders: Map<any, DeferredServiceProvider> = new Map()
+  private deferredProviders: DeferredServiceProvider[] = []
 
-  private instances: Map<any, object> = new Map()
+  private instances: Map<any, object | null> = new Map()
 
   constructor(
     definitions: IndexableObj = {},
     providers: ServiceProviderInterface[] = []
   ) {
-    // todo:
+    this.setMultiple(definitions)
+    for (const key in providers) {
+      if (providers.hasOwnProperty(key)) {
+        const provider = providers[key]
+        this.addProvider(provider)
+      }
+    }
   }
 
   public getId(id: any): string {
@@ -64,7 +83,7 @@ export class Container implements ContainerInterface {
     return <object>this.instances.get(id)
   }
 
-  public build(id: string, params: any[] = []): object {
+  protected build(id: string, params: any[] = []): object {
     if (this.building.has(id)) {
       throw new CircularReferenceError(
         `Circular reference to ${id} detected while building: ${this.building}`
@@ -73,13 +92,62 @@ export class Container implements ContainerInterface {
 
     this.building.set(id, 1)
     this.registerProviderIfDeferredFor(id)
+    const obj = this.buildInternal(id, params)
+    return obj
+  }
+
+  public addProvider(providerDefinition: NormalizeType) {
+    const provider = this.buildProvider(providerDefinition)
+
+    if (provider instanceof DeferredServiceProvider) {
+      this.deferredProviders.push(provider)
+    } else {
+      provider.register(this)
+    }
+  }
+
+  private buildProvider(
+    providerDefinition: NormalizeType
+  ): ServiceProviderInterface {
+    const provider = normalize(providerDefinition).resolve(this, [])
+    if (!(provider instanceof ServiceProvider)) {
+      throw new InvalidConfigError(
+        `Service provider should be an instance of ${provider}`
+      )
+    }
+
+    return provider
+  }
+
+  public set(id: string, $definition: NormalizeType) {
+    this.instances.set(id, null)
+    const def = normalize($definition)
+    this.definitions.set(id, def)
+  }
+
+  public setMultiple(definitions: IndexableObj) {
+    Object.keys(definitions).map(key => {
+      this.set(key, <NormalizeType>definitions[key])
+    })
   }
 
   public has(id: string): boolean {
     return this.definitions.has(id)
   }
 
-  private buildInternal(id: string, params: any[] = []) {
+  public hasInstance(id: string): boolean {
+    return this.instances.has(this.getId(id))
+  }
+
+  public getInstances() {
+    const result = []
+    for (const iterator of this.instances.values()) {
+      result.push(iterator)
+    }
+    return result
+  }
+
+  private buildInternal(id: string, params: any[] = []): object {
     if (this.definitions.has(id) === false) {
       return this.buildPrimitive(id, params)
     }
@@ -87,15 +155,20 @@ export class Container implements ContainerInterface {
     return (<Definition>this.definitions.get(id)).resolve(this, params)
   }
 
-  private registerProviderIfDeferredFor(id: string) {
-    const providers = this.deferredProviders
+  private buildPrimitive(id: string, params: any[] = []): object {
+    return (<Definition>this.definitions.get(id)).resolve(this, params)
+  }
 
-    for (const [key, provider] of providers.entries()) {
+  private registerProviderIfDeferredFor(id: string) {
+    const providers = this.deferredProviders.slice()
+
+    for (let index = 0; index < providers.length; index++) {
+      const provider = providers[index]
       if (provider.hasDefinitionFor(id)) {
         provider.register(this)
 
         // provider should be removed after registration to not be registered again
-        providers.delete(key)
+        this.deferredProviders.splice(index, 1)
       }
     }
   }

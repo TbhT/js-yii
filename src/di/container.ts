@@ -120,7 +120,10 @@ export class Container implements ContainerInterface {
   }
 
   public set(id: string, $definition: NormalizeType) {
-    this.instances.set(id, null)
+    if (this.instances.has(id)) {
+      this.instances.delete(id)
+    }
+
     const def = normalize($definition)
     this.definitions.set(id, def)
   }

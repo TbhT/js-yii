@@ -202,8 +202,10 @@ export class ValueDefinition extends Definition {
  *
  * ```
  */
-export class Reference implements DefinitionInterface {
-  private constructor(private id: string) {}
+export class Reference extends Definition {
+  private constructor(private id: string) {
+    super()
+  }
 
   public getId(): string {
     return this.id
@@ -247,17 +249,16 @@ export function normalize(
   }
 
   if (isObject(config) && isFunction((<IndexableObj>config).className)) {
-    const configParams: IndexableObj = Object.assign({}, config)
     const fn: Constructable = (<IndexableObj>config)['className']
     if (fn) {
-      delete configParams['className']
+      delete (<IndexableObj>config)['className']
     }
     const args: any[] = (<IndexableObj>config)['args']
-    
+
     if (args) {
-      delete configParams['args']
+      delete (<IndexableObj>config)['args']
     }
-    return new CtorDefinition(fn, args, configParams)
+    return new CtorDefinition(fn, args, config)
   } else if (isObject(config)) {
     return new ValueDefinition(config)
   }

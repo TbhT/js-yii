@@ -109,10 +109,24 @@ class CtorBuilder {
     return this.configure(container, obj, definition.getConfig())
   }
 
+  private resolveParameter(params: any[]): Definition[] {
+    const result: Definition[] = []
+    for (const param of params) {
+      if (isFunction(param)) {
+        result.push(new CtorDefinition(param))
+      } else {
+        result.push(new ValueDefinition(param))
+      }
+    }
+
+    return result
+  }
+
   private getDependencies(definition: CtorDefinition): any[] {
     const $class = definition.getClass()
     if (!CtorBuilder.$dependencies.has($class)) {
-      CtorBuilder.$dependencies.set($class, definition.getParams())
+      const params = definition.getParams()
+      CtorBuilder.$dependencies.set($class, this.resolveParameter(params))
     }
 
     return <any[]>CtorBuilder.$dependencies.get($class)

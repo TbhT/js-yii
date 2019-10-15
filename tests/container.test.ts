@@ -29,11 +29,11 @@ describe('Container class', () => {
     const container = new Container()
     container.set('a', {
       className: A,
-      args: [Reference.to('b')]
+      args: [B]
     })
     container.set('b', {
       className: B,
-      args: [Reference.to('a')]
+      args: [A]
     })
     const a: A = <A>container.get('a')
     expect(a.b).toBeInstanceOf(B)

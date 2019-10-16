@@ -1,4 +1,4 @@
-import { ContainerInterface } from '../di/container'
+import { ContainerInterface, Container } from '../di/container'
 import { NotInstantiableError, InvalidConfigError } from './exceptions'
 import { isFunction, isObject, isArray, isString } from 'util'
 
@@ -58,7 +58,7 @@ export class CtorDefinition extends Definition {
     params: [] = [],
     config: IndexableObj = {}
   ): CtorDefinition {
-    if (!className) {
+    if (isFunction(className) === false) {
       throw new NotInstantiableError(`${className} cannot be instanced`)
     }
 
@@ -163,7 +163,7 @@ class CtorBuilder {
     config: IndexableObj
   ) {
     for (const action in config) {
-      if (obj.hasOwnProperty(action)) {
+      if (config.hasOwnProperty(action)) {
         let args = config[action]
 
         if (args instanceof Definition) {

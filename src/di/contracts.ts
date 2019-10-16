@@ -1,5 +1,5 @@
 import { Container } from './container'
-import { IndexableObj } from '../factory/definitions'
+import { IndexableObj, NormalizeType } from '../factory/definitions'
 
 /**
  * represents a component responsible for class registration in the Container.
@@ -87,7 +87,5 @@ export abstract class DeferredServiceProvider
 
   public abstract provides(): IndexableObj
 
-  public hasDefinitionFor(id: string): boolean {
-    return id in this.provides()
-  }
+  public abstract hasDefinitionFor(id: NormalizeType): boolean
 }

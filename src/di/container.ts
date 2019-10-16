@@ -3,7 +3,8 @@ import {
   Definition,
   Constructable,
   NormalizeType,
-  normalize
+  normalize,
+  CtorDefinition
 } from '../factory/definitions'
 import {
   ServiceProviderInterface,
@@ -62,19 +63,17 @@ export class Container implements ContainerInterface {
     providers: ServiceProviderInterface[] = []
   ) {
     this.setMultiple(definitions)
-    for (const key in providers) {
-      if (providers.hasOwnProperty(key)) {
-        const provider = providers[key]
-        this.addProvider(provider)
-      }
+
+    for (const provider of providers) {
+      this.addProvider(provider)
     }
   }
 
   public getId(id: any): string {
-    return isString(id) ? id : id.getId()
+    return id
   }
 
-  public get(id: string, params: any[] = []): object {
+  public get(id: NormalizeType, params: any[] = []): object {
     id = this.getId(id)
     if (this.instances.has(id) === false) {
       this.instances.set(id, this.build(id, params))
@@ -83,16 +82,18 @@ export class Container implements ContainerInterface {
     return <object>this.instances.get(id)
   }
 
-  protected build(id: string, params: any[] = []): object {
+  protected build(id: NormalizeType, params: any[] = []): object {
     if (this.building.has(id)) {
       throw new CircularReferenceError(
-        `Circular reference to ${id} detected while building: ${this.building}`
+        `Circular reference to ${id} detected while building Container#building`
       )
     }
 
     this.building.set(id, 1)
     this.registerProviderIfDeferredFor(id)
     const obj = this.buildInternal(id, params)
+    this.building.delete(id)
+
     return obj
   }
 
@@ -119,8 +120,11 @@ export class Container implements ContainerInterface {
     return provider
   }
 
-  public set(id: string, $definition: NormalizeType) {
-    this.instances.set(id, null)
+  public set(id: NormalizeType, $definition: NormalizeType) {
+    if (this.instances.has(id)) {
+      this.instances.delete(id)
+    }
+
     const def = normalize($definition)
     this.definitions.set(id, def)
   }
@@ -131,11 +135,11 @@ export class Container implements ContainerInterface {
     })
   }
 
-  public has(id: string): boolean {
+  public has(id: NormalizeType): boolean {
     return this.definitions.has(id)
   }
 
-  public hasInstance(id: string): boolean {
+  public hasInstance(id: NormalizeType): boolean {
     return this.instances.has(this.getId(id))
   }
 
@@ -147,7 +151,7 @@ export class Container implements ContainerInterface {
     return result
   }
 
-  private buildInternal(id: string, params: any[] = []): object {
+  private buildInternal(id: NormalizeType, params: any[] = []): object {
     if (this.definitions.has(id) === false) {
       return this.buildPrimitive(id, params)
     }
@@ -155,11 +159,11 @@ export class Container implements ContainerInterface {
     return (<Definition>this.definitions.get(id)).resolve(this, params)
   }
 
-  private buildPrimitive(id: string, params: any[] = []): object {
-    return (<Definition>this.definitions.get(id)).resolve(this, params)
+  private buildPrimitive(id: NormalizeType, params: any[] = []): object {
+    return normalize(id).resolve(this, params)
   }
 
-  private registerProviderIfDeferredFor(id: string) {
+  private registerProviderIfDeferredFor(id: NormalizeType) {
     const providers = this.deferredProviders.slice()
 
     for (let index = 0; index < providers.length; index++) {

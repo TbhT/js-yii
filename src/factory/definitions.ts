@@ -1,4 +1,4 @@
-import { ContainerInterface } from '../di/container'
+import { ContainerInterface, Container } from '../di/container'
 import { NotInstantiableError, InvalidConfigError } from './exceptions'
 import { isFunction, isObject, isArray, isString } from 'util'
 
@@ -58,7 +58,7 @@ export class CtorDefinition extends Definition {
     params: [] = [],
     config: IndexableObj = {}
   ): CtorDefinition {
-    if (!className) {
+    if (isFunction(className) === false) {
       throw new NotInstantiableError(`${className} cannot be instanced`)
     }
 
@@ -109,10 +109,24 @@ class CtorBuilder {
     return this.configure(container, obj, definition.getConfig())
   }
 
+  private resolveParameter(params: any[]): Definition[] {
+    const result: Definition[] = []
+    for (const param of params) {
+      if (isFunction(param)) {
+        result.push(new CtorDefinition(param))
+      } else {
+        result.push(new ValueDefinition(param))
+      }
+    }
+
+    return result
+  }
+
   private getDependencies(definition: CtorDefinition): any[] {
     const $class = definition.getClass()
     if (!CtorBuilder.$dependencies.has($class)) {
-      CtorBuilder.$dependencies.set($class, definition.getParams())
+      const params = definition.getParams()
+      CtorBuilder.$dependencies.set($class, this.resolveParameter(params))
     }
 
     return <any[]>CtorBuilder.$dependencies.get($class)
@@ -149,7 +163,7 @@ class CtorBuilder {
     config: IndexableObj
   ) {
     for (const action in config) {
-      if (obj.hasOwnProperty(action)) {
+      if (config.hasOwnProperty(action)) {
         let args = config[action]
 
         if (args instanceof Definition) {
@@ -202,8 +216,10 @@ export class ValueDefinition extends Definition {
  *
  * ```
  */
-export class Reference implements DefinitionInterface {
-  private constructor(private id: string) {}
+export class Reference extends Definition {
+  private constructor(private id: string) {
+    super()
+  }
 
   public getId(): string {
     return this.id
@@ -247,17 +263,16 @@ export function normalize(
   }
 
   if (isObject(config) && isFunction((<IndexableObj>config).className)) {
-    const configParams: IndexableObj = Object.assign({}, config)
     const fn: Constructable = (<IndexableObj>config)['className']
     if (fn) {
-      delete configParams['className']
+      delete (<IndexableObj>config)['className']
     }
     const args: any[] = (<IndexableObj>config)['args']
-    
+
     if (args) {
-      delete configParams['args']
+      delete (<IndexableObj>config)['args']
     }
-    return new CtorDefinition(fn, args, configParams)
+    return new CtorDefinition(fn, args, config)
   } else if (isObject(config)) {
     return new ValueDefinition(config)
   }

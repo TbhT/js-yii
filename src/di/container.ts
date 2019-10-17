@@ -44,7 +44,7 @@ export interface ContainerInterface {
    * @param {string} id identifier
    * @returns {boolean}
    */
-  has(id: string): boolean
+  has(id: NormalizeType): boolean
 }
 
 export class Container implements ContainerInterface {

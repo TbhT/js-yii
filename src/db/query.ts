@@ -3,6 +3,8 @@ import { ExpressionInterface } from './expression'
 import { IndexableObj } from '../factory/definitions'
 import { isObject, isArray } from 'util'
 
+type ConditionType = IndexableObj | any[]
+
 interface QueryInterface {
   /**
    * executes the query and returns all results as an array
@@ -193,7 +195,9 @@ abstract class AQuery extends Component
     return this
   }
 
-  protected filterCondition(condition: IndexableObj | any[]) {
+  protected filterCondition(
+    condition: IndexableObj | any[]
+  ): IndexableObj | any[] {
     const isObj = isObject(condition)
     const isAr = isArray(condition)
     if (!isObj || !isAr) {
@@ -211,7 +215,44 @@ abstract class AQuery extends Component
     }
 
     const operator: string = condition.shift()
-    // todo:
+
+    switch (operator.toUpperCase()) {
+      case 'NOT':
+      case 'AND':
+      case 'OR':
+        {
+          ;(<any[]>condition).map(
+            (operand: any[] | IndexableObj, index: number) => {
+              const subCondition = this.filterCondition(operand)
+              if (!subCondition) {
+                delete (<any[]>condition)[index]
+              } else {
+                ;(<any[]>condition)[index] = subCondition
+              }
+            }
+          )
+        }
+        break
+      case 'BETWEEN':
+      case 'NOT BETWEEN':
+        if (!(<any[]>condition)[1] || !(<any[]>condition)[2]) {
+          return []
+        }
+        break
+      default:
+        if (!(<any[]>condition)[1]) {
+          return []
+        }
+        break
+    }
+
+    ;(<any[]>condition).unshift(operator)
+
+    return <any[]>condition
+  }
+
+  public filterWhere() {
+
   }
 }
 

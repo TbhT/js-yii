@@ -345,5 +345,213 @@ abstract class AQuery extends Component
 }
 
 export class Query extends AQuery {
-    
+  public select: any
+
+  public selectOption: IndexableObj = {}
+
+  public distinct: boolean
+
+  public from
+
+  public groupBy
+
+  public join
+
+  public having
+
+  public union
+
+  public params: IndexableObj = {}
+
+  public queryCacheDuration
+
+  public queryCacheDependency
+
+  public createCommand() {}
+
+  public prepare(): Query {
+    return this
+  }
+
+  public batch(batchSize = 100, db = null) {
+      // todo: 
+  }
+
+  public each(batchSize = 100, db = null) {
+    // todo:
+  }
+
+  public all(): any[] {
+    // todo:
+  }
+
+  public populate() {
+      // todo:
+  }
+
+  public one(): any[] {
+    // todo:
+  }
+
+  public scalar() {
+      // todo:
+  }
+
+  public column() {
+      // todo:
+  }
+
+  public count() {
+      // todo:
+  }
+
+  public sum() {
+      // todo:
+  }
+
+  public average() {
+      // todo:
+  }
+
+  public min() {
+      // todo:
+  }
+
+  public max() {
+      // todo:
+  }
+
+  public exists(): boolean {
+    // todo:
+  }
+
+  protected queryScalar() {
+      // todo:
+  }
+
+  public getTablesUsedInFrom() {
+      // todo:
+  }
+
+  protected cleanUpTableNames() {
+      // todo:
+  }
+
+  private ensureNameQuoted() {
+      // todo:
+  }
+
+  public select() {
+      // todo:
+  }
+
+  public addSelect() {
+      // todo:
+  }
+
+  public getUniqueColumns() {
+      // todo:
+  }
+
+  protected getUnaliasedColumnsFromSelect() {
+      // todo:
+  }
+
+  public distinct() {
+      // todo:
+  }
+
+  public from() {
+      // todo:
+  }
+
+  public where() {
+      // todo:
+  }
+
+  public andWhere() {
+      // todo:
+  }
+
+  public orWhere() {
+      // todo:
+  }
+
+  public andFilterCompare() {
+      // todo:
+  }
+
+  public join() {
+      // todo:
+  }
+
+  public innerJoin() {
+      // todo:
+  }
+
+  public leftJoin() {
+      // todo:
+  }
+
+  public rightJoin() {
+      // todo:
+  }
+
+  public groupBy() {
+      // todo:
+  }
+
+  public addGroupByy() {
+      // todo:
+  }
+
+  public having() {
+      // todo:
+  }
+
+  public andHaving() {
+      // todo:
+  }
+
+  public orHaving() {
+      // todo:
+  }
+
+  public filterHaving() {
+      // todo:
+  }
+
+  public orFilterHaving() {
+      // todo:
+  }
+
+  public union() {
+      // todo:
+  }
+
+  public params() {
+      // todo:
+  }
+
+  public addParams() {
+      // todo:
+  }
+
+  public cache() {
+      // todo:
+  }
+
+  public noCache() {
+      // todo:
+  }
+
+  protected setCommandCache() {
+      // todo:
+  }
+
+  static create() {
+      // todo:
+  }
+
+  
 }

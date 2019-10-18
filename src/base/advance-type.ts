@@ -27,3 +27,7 @@ export type Pick<T, K extends keyof T> = {
 export type Record<K extends string, T> = {
     [P in K]: T
 }
+
+export const SORT_ASC = 1
+
+export const SORT_DESC = 2

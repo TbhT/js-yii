@@ -2,6 +2,8 @@ import { Component } from '../base/component'
 import { ExpressionInterface } from './expression'
 import { IndexableObj } from '../factory/definitions'
 import { isObject, isArray } from 'util'
+import { SORT_ASC, SORT_DESC } from '../base/advance-type'
+import { IndexedObjType } from '../base/base-yii'
 
 type ConditionType = IndexableObj | any[]
 
@@ -31,7 +33,7 @@ interface QueryInterface {
    *
    * @param $db
    */
-  exists($db): boolean
+  exists(db): boolean
 
   /**
    *
@@ -153,29 +155,37 @@ interface QueryInterface {
 
 abstract class AQuery extends Component
   implements QueryInterface, ExpressionInterface {
+  abstract all(db): any[]
+
+  abstract one(db): any[]
+
+  abstract count(q: string): number
+
+  abstract exists(db): boolean
+
   private $where: any = null
 
   private $limit: any
 
   private $offset: any
 
-  private $orderBy: any
+  private $orderBy: IndexableObj | null = null
 
   private $indexBy: any
 
-  private emulateExecution: any
+  private $emulateExecution: any
 
-  public indexBy(column: string) {
+  public indexBy(column: string): AQuery {
     this.$indexBy = column
     return this
   }
 
-  public where(condition: IndexableObj) {
+  public where(condition: ConditionType): AQuery {
     this.$where = condition
     return this
   }
 
-  public andWhere(condition: IndexableObj | any[]) {
+  public andWhere(condition: ConditionType): AQuery {
     if (this.$where === null) {
       this.$where = condition
     } else {
@@ -185,7 +195,7 @@ abstract class AQuery extends Component
     return this
   }
 
-  public orWhere(condition: IndexableObj | any[]) {
+  public orWhere(condition: ConditionType): AQuery {
     if (this.$where === null) {
       this.$where = condition
     } else {
@@ -195,9 +205,7 @@ abstract class AQuery extends Component
     return this
   }
 
-  protected filterCondition(
-    condition: IndexableObj | any[]
-  ): IndexableObj | any[] {
+  protected filterCondition(condition: ConditionType): ConditionType {
     const isObj = isObject(condition)
     const isAr = isArray(condition)
     if (!isObj || !isAr) {
@@ -221,16 +229,14 @@ abstract class AQuery extends Component
       case 'AND':
       case 'OR':
         {
-          ;(<any[]>condition).map(
-            (operand: any[] | IndexableObj, index: number) => {
-              const subCondition = this.filterCondition(operand)
-              if (!subCondition) {
-                delete (<any[]>condition)[index]
-              } else {
-                ;(<any[]>condition)[index] = subCondition
-              }
+          ;(<any[]>condition).map((operand: ConditionType, index: number) => {
+            const subCondition = this.filterCondition(operand)
+            if (!subCondition) {
+              delete (<any[]>condition)[index]
+            } else {
+              ;(<any[]>condition)[index] = subCondition
             }
-          )
+          })
         }
         break
       case 'BETWEEN':
@@ -251,9 +257,93 @@ abstract class AQuery extends Component
     return <any[]>condition
   }
 
-  public filterWhere() {
+  public filterWhere(condition: ConditionType): AQuery {
+    condition = this.filterCondition(condition)
+    if (!condition.length) {
+      this.where(condition)
+    }
 
+    return this
+  }
+
+  public andFilterWhere(condition: ConditionType): AQuery {
+    condition = this.filterCondition(condition)
+    if (!condition.length) {
+      this.andWhere(condition)
+    }
+
+    return this
+  }
+
+  public orFilterWhere(condition: ConditionType): AQuery {
+    condition = this.filterCondition(condition)
+    if (!condition.length) {
+      this.orWhere(condition)
+    }
+
+    return this
+  }
+
+  protected normalizeOrderBy(columns: string | IndexableObj) {
+    if (isArray(columns)) {
+      return columns
+    }
+
+    columns = columns.split(/\s*?,\s*?/)
+    const result: IndexableObj = {}
+    const colRegexp = /^(.*?)\s+(asc|desc)$/i
+
+    for (const col of <string[]>columns) {
+      if (colRegexp.test(col)) {
+        const matches = <RegExpExecArray>colRegexp.exec(col)
+        result[matches[1]] = matches[2] === 'asc' ? SORT_ASC : SORT_DESC
+      } else {
+        result[col] = SORT_ASC
+      }
+    }
+
+    return result
+  }
+
+  public orderBy(columns: string | IndexableObj): AQuery {
+    this.$orderBy = this.normalizeOrderBy(columns)
+    return this
+  }
+
+  public addOrderBy(columns: string | IndexableObj): AQuery {
+    columns = this.normalizeOrderBy(columns)
+    if (this.$orderBy === null) {
+      this.$orderBy = columns
+    } else {
+      const oldOrderBy = Object.entries(this.$orderBy)
+      const newOrderBy = Object.entries(columns)
+      const allOrderBy = [...oldOrderBy, ...newOrderBy]
+      const allObj: IndexableObj = {}
+      allOrderBy.map(entry => {
+        allObj[entry[0]] = entry[1]
+      })
+      this.$orderBy = allObj
+    }
+
+    return this
+  }
+
+  public limit(limit: number): AQuery {
+    this.$limit = limit
+    return this
+  }
+
+  public offset(offset: number): AQuery {
+    this.$offset = offset
+    return this
+  }
+
+  public emulateExecution(value = true): AQuery {
+    this.$emulateExecution = value
+    return this
   }
 }
 
-export class Query extends AQuery {}
+export class Query extends AQuery {
+    
+}

@@ -17,9 +17,6 @@ export class Expression extends BaseObject implements ExpressionInterface {
   }
 }
 
-
 export class ExpressionBuilder implements ExpressionBuilderInterface {
-    constructor(protected queryBuilder) {
-
-    }
+  constructor(protected queryBuilder) {}
 }

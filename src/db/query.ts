@@ -1,6 +1,6 @@
 import { Component } from '../base/component'
 import { ExpressionInterface } from './expression'
-import { IndexableObj } from '../factory/definitions'
+import { IndexableObj } from '../../packages/factory/definitions'
 import { isObject, isArray } from 'util'
 import { SORT_ASC, SORT_DESC } from '../base/advance-type'
 import { IndexedObjType } from '../base/base-yii'
@@ -374,7 +374,7 @@ export class Query extends AQuery {
   }
 
   public batch(batchSize = 100, db = null) {
-      // todo: 
+      // todo:
   }
 
   public each(batchSize = 100, db = null) {
@@ -553,5 +553,5 @@ export class Query extends AQuery {
       // todo:
   }
 
-  
+
 }

@@ -1,6 +1,6 @@
-import { Container } from '../src/di/container'
-import { InvalidConfigError } from '../src/factory/exceptions'
-import { Reference } from '../src/factory/definitions'
+import { Container } from '../packages/di/container'
+import { InvalidConfigError } from '../packages/factory/exceptions'
+import { Reference } from '../packages/factory/definitions'
 import {
   A,
   B,

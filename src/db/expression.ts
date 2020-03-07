@@ -1,5 +1,5 @@
 import { BaseObject } from '../base/base-object'
-import { IndexableObj } from '../factory/definitions'
+import { IndexableObj } from '../../packages/factory/definitions'
 
 export interface ExpressionInterface {}
 
